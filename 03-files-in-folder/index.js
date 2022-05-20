@@ -15,7 +15,7 @@ async function readFiles () {
         const fileExtension = ext.slice(1);
 
         stat(filePath, (err, stats) => {
-          const fileSize = `${stats.size / 1000} kb`;
+          const fileSize = `${stats.size / 1024} kb`;
 
           console.log(`${fileName} - ${fileExtension} - ${fileSize}`);
         });
