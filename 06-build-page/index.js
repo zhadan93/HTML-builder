@@ -8,6 +8,7 @@ const htmlTemplatePath = path.join(__dirname, 'components');
 const copyHtmlPath = path.join(bundlePath, 'index.html');
 const baseAssetsPath = path.join(__dirname, 'assets');
 const copyAssetsPath = path.join(bundlePath, 'assets');
+const mergePath = path.join(bundlePath, 'style.css');
 
 const readDir = async (path) => {
   try {
@@ -17,26 +18,19 @@ const readDir = async (path) => {
   }
 }
 
-const showError = (error) => console.log('Error:', error.message);
-
 const replaceTemplate = async () => {
   try {
-    const htmlTemplates = await readDir(htmlTemplatePath, {withFileTypes: true});
     let htmlData = await readFile(baseHtmlPath, 'utf-8');
+    const templates = htmlData.match(/{{\w*}}/g).map(item => item.replace(/[{}]/g, ''));
 
-    for (let htmlTemplate of htmlTemplates) {
-      const filePath = path.join(htmlTemplatePath, htmlTemplate.name);
-      const { name } = path.parse(filePath);
-      
-      if (htmlData.includes(`{{${name}}}`)) {
-        const htmlTemplateData = await readFile(filePath, 'utf-8');
+    for (let template of templates) {
+      const filePath = path.join(htmlTemplatePath, `${template}.html`);
+      const htmlTemplateData = await readFile(filePath, 'utf-8');
     
-        const regExp = new RegExp(`{{${name}}}`);
-  
-        htmlData = htmlData.replace(regExp, htmlTemplateData);
-      }
+      const regExp = new RegExp(`{{${template}}}`);
+      htmlData = htmlData.replace(regExp, htmlTemplateData);
     }
-  
+    
     const htmlWriteStream = fs.createWriteStream(copyHtmlPath);
     htmlWriteStream.write(htmlData);
   } catch (err) {
@@ -44,10 +38,10 @@ const replaceTemplate = async () => {
   }
 }
 
-const mergePath = path.join(bundlePath, 'style.css');
-const styleWriteStream = fs.createWriteStream(mergePath);
 
+const styleWriteStream = fs.createWriteStream(mergePath);
 const getStyleData = (chunk) => styleWriteStream.write(`${chunk}\n`);
+const showError = (error) => console.log('Error:', error.message);
 
 const mergeStyles = async () => {
   const basePath = path.join(__dirname, 'styles');
@@ -65,6 +59,7 @@ const mergeStyles = async () => {
     }
   }); 
 };
+
 
 const copyFiles = async (basePath, copyPath) => {  
   try {
@@ -92,6 +87,7 @@ const copyDirectory = async () => {
   
   copyFiles(baseAssetsPath, copyAssetsPath);
 };
+
 
 (async () => {
   await mkdir(bundlePath, {recursive: true});
