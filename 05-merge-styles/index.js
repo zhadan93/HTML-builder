@@ -26,7 +26,7 @@ const mergeStyles = async () => {
     const fileExtension = ext.slice(1);
 
     if (style.isFile() && fileExtension === 'css') {
-      readableStream = fs.createReadStream(filePath, 'utf-8');
+      const readableStream = fs.createReadStream(filePath, 'utf-8');
       readableStream.on('data', getData);
       readableStream.on('error', showError);
     }
